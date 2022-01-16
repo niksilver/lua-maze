@@ -32,9 +32,9 @@ end
 -- Create paths throughout the whole maze.
 --
 function create_paths()
-    for i = 1, height do
-        for j = 1, width do
-            create_path(j, i)
+    for i = 2, height, 2 do
+        for j = 2, width, 2 do
+            create_path(i, j)
         end
     end
 end
@@ -42,55 +42,92 @@ end
 -- Create a single random path from a traversable point, going as far
 -- as it can without connecting to anything new.
 --
-function create_path(x, y)
+function create_path(y, x)
     -- Don't cut here if there's no path here already
 
+    print("Creating path from " .. y .. "," .. x)
     if maze[y][x] == false then
+        print("  Can't create path")
         return
     end
-    print "Creating path"
+    print("  Looking good")
 
     -- Okay, let's extend what we can
 
-    delta_x, delta_y = get_deltas()
+    delta_y, delta_x = get_deltas(y, x)
+    if delta_x == nil then
+        print("  Can't create first path!")
+        return
+    end
+
     next_x = x + 2 * delta_x
     next_y = y + 2 * delta_y
 
-    print("Trying to cut to " .. next_y .. "," .. next_x)
 
-    while can_cut(next_x, next_y) do
-        print "  Okay, cutting"
+    repeat
+        print("  Going to cut to " .. next_y .. "," .. next_x)
+
         maze[y + delta_y][x + delta_x] = true
         maze[next_y][next_x] = true
         x, y = next_x, next_y
 
-        delta_x, delta_y = get_deltas()
-        next_x = x + 2 * delta_x
-        next_y = y + 2 * delta_y
-    end
+        print_maze()
+
+        delta_y, delta_x = get_deltas(y, x)
+        if delta_x == nil then
+            print("  Can't find anywhere to cut to")
+            return
+        else
+            next_x = x + 2 * delta_x
+            next_y = y + 2 * delta_y
+        end
+
+    until delta_x == nil
+
     print "Done creating path"
 end
 
 -- Can we cut to a particular location? True if the location is both on
 -- the maze and hasn't yet been cut into.
 --
-function can_cut(x, y)
+function can_cut(y, x)
     return x >= 1 and x <= width and y >= 1 and y <= height and maze[y][x] == false
 end
 
--- Randomly work out which direction we're going in.
--- Returns two values, one for the x change and one for the y change
--- (values are +1, 0, or -1).
+-- Randomly work out which direction we're going in from a given y,x location.
+-- Will find some direction if at all possible.
 --
-function get_deltas()
-    choice = math.random(4)
+-- Returns two values, one for the y change and one for the x change
+-- (values are +1, 0, or -1), but will return nil,nil if no direction
+-- is possible
+--
+function get_deltas(y, x)
     directions = {
         { 1, 0 },
         { 0, 1 },
         { -1, 0 },
         { 0, -1 }
     }
-    return table.unpack(directions[choice])
+
+    -- Randomise the possible directions
+
+    for i = 1, 3 do
+        local i2 = math.random(4)
+        directions[i], directions[i2] = directions[i2], directions[i]
+    end
+
+    -- Find the first possible direction
+
+    for i = 1, 4 do
+        local delta_y, delta_x = table.unpack(directions[i])
+        if can_cut(y + 2*delta_y, x + 2*delta_x) then
+            return delta_y, delta_x
+        end
+    end
+
+    -- No direction found
+
+    return nil, nil
 end
 
 -- Print out the maze.
