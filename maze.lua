@@ -52,14 +52,13 @@ function create_path(y, x)
 
     -- Okay, let's extend what we can
 
-    delta_y, delta_x = get_deltas(y, x)
+    local delta_y, delta_x = get_deltas(y, x)
     if delta_x == nil then
         return
     end
 
-    next_x = x + 2 * delta_x
-    next_y = y + 2 * delta_y
-
+    local next_x = x + 2 * delta_x
+    local next_y = y + 2 * delta_y
 
     repeat
         maze[y + delta_y][x + delta_x] = true
@@ -92,7 +91,7 @@ end
 -- is possible
 --
 function get_deltas(y, x)
-    directions = {
+    local directions = {
         { 1, 0 },
         { 0, 1 },
         { -1, 0 },
@@ -128,11 +127,48 @@ function print_maze()
             if maze[i][j] == true then
                 io.write("  ")
             else
-                io.write("**")
+                io.write(barrier_string(i, j))
             end
         end
         io.write("\n")
     end
+end
+
+-- The string to print for a barrier in the maze.
+--
+function barrier_string(y, x)
+    if y == 1 or y == width or x == 1 or x == height then
+        return "ee"
+    end
+
+    -- Possible maze values above, right, below, left... and their strings
+
+    local str = {
+        ["    "] = "**",
+        ["   *"] = "-+",
+        ["  * "] = "++",
+        ["  **"] = "-+",
+        [" *  "] = "+-",
+        [" * *"] = "--",
+        [" ** "] = "+-",
+        [" ***"] = "++",
+
+        ["*   "] = "++",
+        ["*  *"] = "-+",
+        ["* * "] = "||",
+        ["* **"] = "+|",
+        ["**  "] = "+-",
+        ["** *"] = "++",
+        ["*** "] = "|+",
+        ["****"] = "++"
+    }
+    local convert = {
+        [true] = " ",
+        [false] = "*"
+    }
+    local a, b, c, d = maze[y-1][x], maze[y][x+1], maze[y+1][x], maze[y][x-1]
+    a, b, c, d = convert[a], convert[b], convert[c], convert[d]
+    return str[ a..b..c..d ]
 end
 
 -- Generate the maze
