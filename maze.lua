@@ -8,12 +8,12 @@
 -- For a maze of size n, x and y run from 1 to 2*n+1
 --
 maze = {}
-size = 3
+size = 8
 width = 2*size + 1
 height = 2*size + 1
 
 -- Initialise the maze. At first, nothing will be traversable, but we will
--- put in an entry poing. Later we'll cut some paths.
+-- put in the entry and exit points.
 --
 function init()
     for i = 1, height do
@@ -23,10 +23,11 @@ function init()
         end
     end
 
-    -- Cut an entry point
+    -- Cut the entry and exit points
 
     maze[2][1] = true
     maze[2][2] = true
+    maze[height-1][width] = true
 end
 
 -- Create paths throughout the whole maze.
@@ -45,18 +46,14 @@ end
 function create_path(y, x)
     -- Don't cut here if there's no path here already
 
-    print("Creating path from " .. y .. "," .. x)
     if maze[y][x] == false then
-        print("  Can't create path")
         return
     end
-    print("  Looking good")
 
     -- Okay, let's extend what we can
 
     delta_y, delta_x = get_deltas(y, x)
     if delta_x == nil then
-        print("  Can't create first path!")
         return
     end
 
@@ -65,17 +62,12 @@ function create_path(y, x)
 
 
     repeat
-        print("  Going to cut to " .. next_y .. "," .. next_x)
-
         maze[y + delta_y][x + delta_x] = true
         maze[next_y][next_x] = true
         x, y = next_x, next_y
 
-        print_maze()
-
         delta_y, delta_x = get_deltas(y, x)
         if delta_x == nil then
-            print("  Can't find anywhere to cut to")
             return
         else
             next_x = x + 2 * delta_x
@@ -83,8 +75,6 @@ function create_path(y, x)
         end
 
     until delta_x == nil
-
-    print "Done creating path"
 end
 
 -- Can we cut to a particular location? True if the location is both on
@@ -136,9 +126,9 @@ function print_maze()
     for i = 1, height do
         for j = 1, width do
             if maze[i][j] == true then
-                io.write(" ")
+                io.write("  ")
             else
-                io.write("*")
+                io.write("**")
             end
         end
         io.write("\n")
