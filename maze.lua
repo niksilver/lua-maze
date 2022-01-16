@@ -134,13 +134,19 @@ function print_maze()
     end
 end
 
+-- Get a location value safely. Out-of-bounds indices are okay.
+--
+function safe_get(y, x)
+    if y < 1 or y > height or x < 1 or x > width then
+        return true
+    else
+        return maze[y][x]
+    end
+end
+
 -- The string to print for a barrier in the maze.
 --
 function barrier_string(y, x)
-    if y == 1 or y == width or x == 1 or x == height then
-        return "ee"
-    end
-
     -- Possible maze values above, right, below, left... and their strings
 
     local str = {
@@ -166,7 +172,8 @@ function barrier_string(y, x)
         [true] = " ",
         [false] = "*"
     }
-    local a, b, c, d = maze[y-1][x], maze[y][x+1], maze[y+1][x], maze[y][x-1]
+
+    local a, b, c, d = safe_get(y-1,x), safe_get(y,x+1), safe_get(y+1,x), safe_get(y,x-1)
     a, b, c, d = convert[a], convert[b], convert[c], convert[d]
     return str[ a..b..c..d ]
 end
