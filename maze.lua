@@ -6,7 +6,7 @@
 -- The edge of maze is the border, so entirely false apart from entry/exit
 -- points.
 -- For a maze of size n, x and y run from 1 to 2*n+1
---
+
 maze = {}
 size = 8
 width = 2*size + 1
@@ -30,20 +30,20 @@ function init()
     maze[height-1][width] = true
 end
 
--- Create paths throughout the whole maze.
+-- Cut paths throughout the whole maze.
 --
-function create_paths()
+function cut_paths()
     for i = 2, height, 2 do
         for j = 2, width, 2 do
-            create_path(i, j)
+            cut_path(i, j)
         end
     end
 end
 
--- Create a single random path from a traversable point, going as far
+-- Cut a single random path from a traversable point, going as far
 -- as it can without connecting to anything new.
 --
-function create_path(y, x)
+function cut_path(y, x)
     -- Don't cut here if there's no path here already
 
     if maze[y][x] == false then
@@ -173,8 +173,13 @@ function barrier_string(y, x)
         [false] = "*"
     }
 
-    local a, b, c, d = safe_get(y-1,x), safe_get(y,x+1), safe_get(y+1,x), safe_get(y,x-1)
+    local a = safe_get(y-1,x)
+    local b = safe_get(y,x+1)
+    local c = safe_get(y+1,x)
+    local d = safe_get(y,x-1)
+
     a, b, c, d = convert[a], convert[b], convert[c], convert[d]
+
     return str[ a..b..c..d ]
 end
 
@@ -182,5 +187,5 @@ end
 
 math.randomseed( os.time() )
 init()
-create_paths()
+cut_paths()
 print_maze()
